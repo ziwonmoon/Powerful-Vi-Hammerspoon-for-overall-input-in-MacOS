@@ -14,11 +14,12 @@ function lenTable(t)
 end
 
 -- Mode change function
-function changeMode(newMode, execute)
+function changeMode(newMode, callbacks)
     currentMode = newMode
     hs.notify.new({title="ZWVi", informativeText="Current Mode: " .. currentMode}):send()
-    if execute then
-        execute()
+    for i, callback in ipairs(callbacks or {}) do
+        hs.alert.show(i)
+        callback()
     end
 end
 
@@ -31,6 +32,7 @@ function keyHandler(event)
 
     -- normal mode keybindings
     if currentMode == "normal" then
+
         -- Handle 'i' key for insert mode
         if keycode == hs.keycodes.map["i"] then
             -- i
@@ -43,21 +45,49 @@ function keyHandler(event)
                 hs.alert.show("Shift I WIP")
                 return true
             end
+
         -- Handle 'a' key for insert mode
         elseif keycode == hs.keycodes.map["a"] then
             -- a
             if lenTable(modifiers) == 0 then
-                changeMode("insert", function()
+                changeMode("insert", {function()
                     hs.eventtap.keyStroke({}, "right")
-                end)
+                end})
                 return true
             -- Shift + a
             elseif lenTable(modifiers) == 1 and modifiers["shift"] then
-                changeMode("insert", function()
+                changeMode("insert", {function()
                     hs.eventtap.keyStroke({}, "end")
-                end)
+                end})
                 return true
             end
+
+        -- Handle 'o' key for insert mode
+        elseif keycode == hs.keycodes.map["o"] then
+            -- o
+            if lenTable(modifiers) == 0 then
+                changeMode("insert", {function()
+                    hs.eventtap.keyStroke({}, "home")
+                end,
+                function()
+                    hs.eventtap.keyStroke({}, "return")
+                end,
+                function()
+                    hs.eventtap.keyStroke({}, "up")
+                end})
+                return true
+            -- Shift + o
+            elseif lenTable(modifiers) == 1 and modifiers["shift"] then
+                changeMode("insert", {function()
+                    hs.eventtap.keyStroke({}, "home")
+                end,
+                function()
+                    hs.eventtap.keyStroke({}, "return")
+                end})
+                return true
+            end
+        else
+            return true -- Block all other keys in normal mode
         end
     end
 
